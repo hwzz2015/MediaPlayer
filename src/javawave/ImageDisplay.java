@@ -61,9 +61,7 @@ public class ImageDisplay {
 			readImageRGB(width, height, current_path, imgarray[idx-1]);
 		}
 
-
 		return  imgarray;
-
 	}
 
 
