@@ -11,29 +11,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.zip.CheckedInputStream;
 
 public class MediaPlayer {
-    private static void playmusic() {
-        try {
-            File muiscpath = new File("resources/flowers/flowers.wav");
-            if (muiscpath.exists()) {
-
-                AudioInputStream audioInput = AudioSystem.getAudioInputStream(muiscpath);
-                Clip clip = AudioSystem.getClip();
-                clip.open(audioInput);
-                clip.start();
-//				clip.loop(Clip.LOOP_CONTINUOUSLY);
-
-            } else {
-                System.out.println("Cant find music file");
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
     private void sleep(long latency) {
         try {
             Thread.sleep(latency);
@@ -46,11 +33,10 @@ public class MediaPlayer {
     private int v2_frame = 0;
     private boolean v1_start = false;
     private boolean v2_start = false;
+
     PlayMusic m1,m2;
-    static String filename_v1 = "resources/query_videos_2/SeenInexactMatch/HQ1/HQ1_"; //150
-    static String filename_v2 = "resources/traffic/traffic"; //600
-    static String filename_m1 = "resources/query/first/first.wav";
-    static String filename_m2 = "resources/flowers/flowers.wav";
+    BufferedImage[] v1, v2;
+
 
     public MediaPlayer(String[] args){
         int width = 352;
@@ -64,12 +50,56 @@ public class MediaPlayer {
         path[5] = "resources/data/starcraft.txt";
         path[6] = "resources/data/traffic.txt";
 
-        //to be use
-//        ImageProcess imp = new ImageProcess();
-//        imp.convert_video(10,150,args[0],"tempquerydata.txt");
-//        double[][] result = imp.test("tempquerydata.txt", path);
+        String[] vedio_path = new String[7];
+        vedio_path[0] = "resources/flowers/flowers";
+        vedio_path[1] = "resources/interview/interview";
+        vedio_path[2] = "resources/movie/movie";
+        vedio_path[3] = "resources/musicvideo/musicvideo";
+        vedio_path[4] = "resources/sports/sports";
+        vedio_path[5] = "resources/starcraft/starcraft";
+        vedio_path[6] = "resources/traffic/traffic";
+
+        String[] music_path = new String[7];
+        music_path[0] = "resources/flowers/flowers.wav";
+        music_path[1] = "resources/interview/interview.wav";
+        music_path[2] = "resources/movie/movie.wav";
+        music_path[3] = "resources/musicvideo/musicvideo.wav";
+        music_path[4] = "resources/sports/sports.wav";
+        music_path[5] = "resources/starcraft/starcraft.wav";
+        music_path[6] = "resources/traffic/traffic.wav";
+
+        //read the input file
+
+        String query_file_path = "resources/query_videos_2/SeenInexactMatch/HQ4/HQ4_";
+        String query_music_file_path = "resources/query_videos_2/SeenInexactMatch/HQ4/HQ4.wav";
+//                new StringBuilder(query_file_path).append(".wav").toString();
+        String tempfile = "tempquerydata.txt";
+        File file = new File(tempfile);
+        try{
+            boolean result = Files.deleteIfExists(file.toPath());
+        }catch (IOException e){
+            System.out.println("cannot delete file");
+        }
+
+        //start process data
+        ImageProcess imp = new ImageProcess();
+        imp.convert_video(10,150,query_file_path,tempfile);
+        double[][] result = imp.test(tempfile, path);
+
+        double[] possibility = result[7];
+        Map<Double, Integer> map = new HashMap<Double, Integer>();
+        for(int i=0;i<7;i++){
+            map.put(possibility[i],i);
+        }
+        Arrays.sort(possibility);
+        int[] video_rank = new int[3];
+        video_rank[0] = map.get(possibility[6]);
+        video_rank[1] = map.get(possibility[5]);
+        video_rank[2] = map.get(possibility[4]);
 
 
+
+        //configurate window setup
         ImageDisplay ren = new ImageDisplay();
 
         JFrame frame = new JFrame();
@@ -88,23 +118,49 @@ public class MediaPlayer {
         panels[0].add(query_name);
 
         //video selection
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(2);
+
         JButton match1 = new JButton("match1");
         match1.setPreferredSize(new Dimension(80,50));
-        JLabel matched_text1 = new JLabel("matched_text");
+        String temp = vedio_path[video_rank[0]].split("/")[2];
+        String labeltext1 = new StringBuilder(temp).append("  ").append(df.format(possibility[6])).toString();
+        JLabel matched_text1 = new JLabel(labeltext1);
         matched_text1.setOpaque(true);
         JButton match2 = new JButton("match2");
         match2.setPreferredSize(new Dimension(80,50));
-        JLabel matched_text2 = new JLabel("matched_text");
+        temp = vedio_path[video_rank[1]].split("/")[2];
+        String labeltext2 = new StringBuilder(temp).append("  ").append(df.format(possibility[5])).toString();
+        JLabel matched_text2 = new JLabel(labeltext2);
         matched_text2.setOpaque(true);
         JButton match3 = new JButton("match3");
         match3.setPreferredSize(new Dimension(80,50));
-        JLabel matched_text3 = new JLabel("matched_text");
+        temp = vedio_path[video_rank[2]].split("/")[2];
+        String labeltext3 = new StringBuilder(temp).append("  ").append(df.format(possibility[4])).toString();
+        JLabel matched_text3 = new JLabel(labeltext3);
         matched_text3.setOpaque(true);
 
         match1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                MediaPlayer.this.v2 = ren.showIms(vedio_path[video_rank[0]], 600, width, height);
+                MediaPlayer.this.m2 = new PlayMusic(music_path[video_rank[0]]);
+            }
+        });
 
+        match2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MediaPlayer.this.v2 = ren.showIms(vedio_path[video_rank[1]], 600, width, height);
+                MediaPlayer.this.m2 = new PlayMusic(music_path[video_rank[1]]);
+            }
+        });
+
+        match3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MediaPlayer.this.v2 = ren.showIms(vedio_path[video_rank[2]], 600, width, height);
+                MediaPlayer.this.m2 = new PlayMusic(music_path[video_rank[2]]);
             }
         });
 
@@ -127,7 +183,7 @@ public class MediaPlayer {
         //query video
         JLabel vedio_label1 = new JLabel();
         panels[2].add(vedio_label1);
-        BufferedImage[] v1 = ren.showIms(filename_v1, 150, width, height);
+        v1 = ren.showIms(query_file_path, 150, width, height);
         vedio_label1.setIcon(new ImageIcon(v1[0]));
         JButton v1_button_start = new JButton("start");
         JButton v1_button_pause = new JButton("pause");
@@ -163,8 +219,8 @@ public class MediaPlayer {
         //reference video
         JLabel vedio_label2 = new JLabel();
         panels[3].add(vedio_label2);
-        BufferedImage[] v2 = ren.showIms(filename_v2, 600, width, height);
-        vedio_label2.setIcon(new ImageIcon(v2[0]));
+
+        vedio_label2.setIcon(new ImageIcon(v1[0]));
         JButton v2_button_start = new JButton("start");
         JButton v2_button_pause = new JButton("pause");
         JButton v2_button_stop = new JButton("stop");
@@ -173,7 +229,7 @@ public class MediaPlayer {
             @Override
             public void actionPerformed(ActionEvent e) {
                 MediaPlayer.this.v2_start = true;
-                MediaPlayer.this.m2.start();
+                if(MediaPlayer.this.m2 != null) MediaPlayer.this.m2.start();
             }
         });
         panels[3].add(v2_button_pause);
@@ -181,7 +237,7 @@ public class MediaPlayer {
             @Override
             public void actionPerformed(ActionEvent e) {
                 MediaPlayer.this.v2_start = false;
-                MediaPlayer.this.m2.pause();
+                if(MediaPlayer.this.m2 != null) MediaPlayer.this.m2.pause();
             }
         });
         panels[3].add(v2_button_stop);
@@ -190,8 +246,8 @@ public class MediaPlayer {
             public void actionPerformed(ActionEvent e) {
                 MediaPlayer.this.v2_frame = 0;
                 MediaPlayer.this.v2_start = false;
-                MediaPlayer.this.m2.stop();
-                vedio_label2.setIcon(new ImageIcon(v2[0]));
+                if(MediaPlayer.this.m2 != null) MediaPlayer.this.m2.stop();
+                if(MediaPlayer.this.v2 != null) vedio_label2.setIcon(new ImageIcon(MediaPlayer.this.v2[0]));
             }
         });
 //        Points points = new Points();
@@ -203,8 +259,7 @@ public class MediaPlayer {
         frame.setVisible(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        m1 = new PlayMusic(filename_m1);
-        m2 = new PlayMusic(filename_m2);
+        m1 = new PlayMusic(query_music_file_path);
 
 
         while (true) {
@@ -219,7 +274,7 @@ public class MediaPlayer {
             }
 
             if(v2_start){
-                vedio_label2.setIcon(new ImageIcon(v2[v2_frame]));
+                if(MediaPlayer.this.v2 != null) vedio_label2.setIcon(new ImageIcon(MediaPlayer.this.v2[v2_frame]));
                 if(v2_frame == 599){
                     v2_start = false;
                     v2_frame = 0;
@@ -230,9 +285,6 @@ public class MediaPlayer {
 
             sleep((long) 33.33);
         }
-
-
-
     }
 
     public static void main(String[] args) {
