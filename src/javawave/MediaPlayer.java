@@ -1,6 +1,8 @@
 package javawave;
 
 import com.sun.xml.internal.ws.api.ha.StickyFeature;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -36,6 +38,10 @@ public class MediaPlayer {
 
     PlayMusic m1,m2;
     BufferedImage[] v1, v2;
+    JPanel pm2 = new JPanel();
+    JFreeChart[] image_bar = new JFreeChart[3];
+    ChartPanel cc;
+
 
 
     public MediaPlayer(String[] args){
@@ -70,8 +76,8 @@ public class MediaPlayer {
 
         //read the input file
 
-        String query_file_path = "resources/query_videos_2/SeenInexactMatch/HQ4/HQ4_";
-        String query_music_file_path = "resources/query_videos_2/SeenInexactMatch/HQ4/HQ4.wav";
+        String query_file_path = "resources/query/second/second";
+        String query_music_file_path = "resources/query/second/second.wav";
 //                new StringBuilder(query_file_path).append(".wav").toString();
         String tempfile = "tempquerydata.txt";
         File file = new File(tempfile);
@@ -97,6 +103,11 @@ public class MediaPlayer {
         video_rank[1] = map.get(possibility[5]);
         video_rank[2] = map.get(possibility[4]);
 
+        double[][] graph_chart = new double[3][40];
+        graph_chart[0] = result[video_rank[0]];
+        graph_chart[1] = result[video_rank[1]];
+        graph_chart[2] = result[video_rank[2]];
+
 
 
         //configurate window setup
@@ -121,30 +132,35 @@ public class MediaPlayer {
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(2);
 
-        JButton match1 = new JButton("match1");
-        match1.setPreferredSize(new Dimension(80,50));
         String temp = vedio_path[video_rank[0]].split("/")[2];
-        String labeltext1 = new StringBuilder(temp).append("  ").append(df.format(possibility[6])).toString();
-        JLabel matched_text1 = new JLabel(labeltext1);
-        matched_text1.setOpaque(true);
-        JButton match2 = new JButton("match2");
-        match2.setPreferredSize(new Dimension(80,50));
+        String labeltext1 = new StringBuilder(temp).append(".rgb       ").append(df.format(possibility[6] * 100)).append("%").toString();
+        JButton match1 = new JButton(labeltext1);
+        match1.setPreferredSize(new Dimension(200,30));
+
         temp = vedio_path[video_rank[1]].split("/")[2];
-        String labeltext2 = new StringBuilder(temp).append("  ").append(df.format(possibility[5])).toString();
-        JLabel matched_text2 = new JLabel(labeltext2);
-        matched_text2.setOpaque(true);
-        JButton match3 = new JButton("match3");
-        match3.setPreferredSize(new Dimension(80,50));
+        String labeltext2 = new StringBuilder(temp).append(".rgb       ").append(df.format(possibility[5] * 100)).append("%").toString();
+        JButton match2 = new JButton(labeltext2);
+        match2.setPreferredSize(new Dimension(200,30));
+
+
         temp = vedio_path[video_rank[2]].split("/")[2];
-        String labeltext3 = new StringBuilder(temp).append("  ").append(df.format(possibility[4])).toString();
-        JLabel matched_text3 = new JLabel(labeltext3);
-        matched_text3.setOpaque(true);
+        String labeltext3 = new StringBuilder(temp).append(".rgb       ").append(df.format(possibility[4] * 100)).append("%").toString();
+        JButton match3 = new JButton(labeltext3);
+        match3.setPreferredSize(new Dimension(200,30));
 
         match1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 MediaPlayer.this.v2 = ren.showIms(vedio_path[video_rank[0]], 600, width, height);
                 MediaPlayer.this.m2 = new PlayMusic(music_path[video_rank[0]]);
+
+                cc = new ChartPanel(image_bar[0]);
+                cc.setPreferredSize(new Dimension(350,180));
+                pm2.removeAll();
+                pm2.add(cc);
+                pm2.revalidate();
+                pm2.repaint();
+
             }
         });
 
@@ -153,6 +169,15 @@ public class MediaPlayer {
             public void actionPerformed(ActionEvent e) {
                 MediaPlayer.this.v2 = ren.showIms(vedio_path[video_rank[1]], 600, width, height);
                 MediaPlayer.this.m2 = new PlayMusic(music_path[video_rank[1]]);
+
+                cc = new ChartPanel(image_bar[1]);
+                cc.setPreferredSize(new Dimension(350,180));
+                pm2.removeAll();
+                pm2.add(cc);
+                pm2.revalidate();
+                pm2.repaint();
+
+
             }
         });
 
@@ -161,23 +186,49 @@ public class MediaPlayer {
             public void actionPerformed(ActionEvent e) {
                 MediaPlayer.this.v2 = ren.showIms(vedio_path[video_rank[2]], 600, width, height);
                 MediaPlayer.this.m2 = new PlayMusic(music_path[video_rank[2]]);
+
+                cc = new ChartPanel(image_bar[2]);
+                cc.setPreferredSize(new Dimension(350,180));
+                pm2.removeAll();
+                pm2.add(cc);
+                pm2.revalidate();
+                pm2.repaint();
+
+
             }
         });
 
-        panels[1].setLayout(new GridLayout(3,1));
+
+
+
+        image_bar[0] = Chart.Generate_chart(graph_chart[0]);
+        image_bar[1] = Chart.Generate_chart(graph_chart[1]);
+        image_bar[2] = Chart.Generate_chart(graph_chart[2]);
+
+//        ImageIcon image_match1 = new ImageIcon("ggg.jpg");
+//        JLabel label_match1 = new JLabel();
+//        label_match1.setIcon(image_match1);
+//        JPanel panel_match1 = new JPanel();
+//        panel_match1.add(label_match1);
+
+
+
+        panels[1].setLayout(new GridLayout(2,1));
         JPanel pm1 = new JPanel();
         pm1.add(match1);
-        pm1.add(matched_text1);
-        JPanel pm2 = new JPanel();
-        pm2.add(match2);
-        pm2.add(matched_text2);
-        JPanel pm3 = new JPanel();
-        pm3.add(match3);
-        pm3.add(matched_text3);
+        pm1.add(match2);
+        pm1.add(match3);
+
+
 
         panels[1].add(pm1);
         panels[1].add(pm2);
-        panels[1].add(pm3);
+
+
+//        cc = new ChartPanel(image_bar[0]);
+//        cc.setPreferredSize(new Dimension(300,100));
+//        pm2.add(cc);
+
 
 
         //query video
@@ -263,6 +314,7 @@ public class MediaPlayer {
 
 
         while (true) {
+
             if(v1_start){
                 vedio_label1.setIcon(new ImageIcon(v1[v1_frame]));
                 if(v1_frame == 149){
