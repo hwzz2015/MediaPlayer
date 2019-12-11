@@ -157,27 +157,7 @@ public class ImageProcess {
 
     }
 
-    public void showIms(BufferedImage img){
 
-        // Use label to display the image
-        frame = new JFrame();
-        GridBagLayout gLayout = new GridBagLayout();
-        frame.getContentPane().setLayout(gLayout);
-
-        lbIm1 = new JLabel(new ImageIcon(img));
-
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.CENTER;
-        c.weightx = 0.5;
-        c.gridx = 0;
-        c.gridy = 1;
-        frame.getContentPane().add(lbIm1, c);
-
-        frame.pack();
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    }
 
     public void save_to_file(int[][] input,String save_to_file_name){
         int row = input.length;
@@ -246,10 +226,10 @@ public class ImageProcess {
 
     public static void show_img_from_array(){
         ImageProcess ren = new ImageProcess();
-        int[][] r = ren.read_txt(10,22*18,"test2.txt");
+        int[][] r = ren.read_txt(15,22*18,"tempquerydata.txt");
         BufferedImage x = new BufferedImage(22, 18, BufferedImage.TYPE_INT_RGB);
         ren.read_img_file(r[0],x);
-        ren.showIms(x);
+        ImageDisplay.show_single_Ims(x);
     }
 
     public static double[][] test(String testfile_path, String[] database_path){
@@ -276,7 +256,7 @@ public class ImageProcess {
         for(int i=0;i<7;i++){
             possiblity[i] /=q.length;
         }
-        System.out.println(Arrays.toString(possiblity));
+//        System.out.println(Arrays.toString(possiblity));
 
         double[][] lines = new double[8][];
         for(int j=0;j<7;j++){
@@ -288,7 +268,7 @@ public class ImageProcess {
 
                 }
             }
-            System.out.println(Arrays.toString(max_per_frame));
+//            System.out.println(Arrays.toString(max_per_frame));
             lines[j] = max_per_frame;
         }
 
@@ -333,8 +313,9 @@ public class ImageProcess {
         path[4] = "resources/data/sports.txt";
         path[5] = "resources/data/starcraft.txt";
         path[6] = "resources/data/traffic.txt";
-        double[][] result = test("resources/data/SeenExactMatchQ3.txt", path);
+//        double[][] result = test("resources/data/SeenExactMatchQ3.txt", path);
 //        convert();
+        show_img_from_array();
 
     }
 

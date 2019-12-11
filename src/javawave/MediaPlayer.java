@@ -44,7 +44,7 @@ public class MediaPlayer {
 
 
 
-    public MediaPlayer(String[] args){
+    public MediaPlayer(String[] args) {
         int width = 352;
         int height = 288;
         String[] path = new String[7];
@@ -76,23 +76,43 @@ public class MediaPlayer {
 
         //read the input file
 
-        String query_file_path = "resources/query/second/second";
-        String query_music_file_path = "resources/query/second/second.wav";
+        String query_file_path = "resources/query/first/first";
+        String query_music_file_path = "resources/query/first/first.wav";
 //                new StringBuilder(query_file_path).append(".wav").toString();
         String tempfile = "tempquerydata.txt";
         File file = new File(tempfile);
-        try{
+        try {
             boolean result = Files.deleteIfExists(file.toPath());
-        }catch (IOException e){
+        } catch (IOException e) {
             System.out.println("cannot delete file");
         }
 
         //start process data
         ImageProcess imp = new ImageProcess();
-        imp.convert_video(10,150,query_file_path,tempfile);
+        imp.convert_video(10, 150, query_file_path, tempfile);
         double[][] result = imp.test(tempfile, path);
 
         double[] possibility = result[7];
+
+        double max = possibility[0];
+        for (int n = 1; n < possibility.length; n++){
+            if (possibility[n] > max)
+                max = possibility[n];
+        }
+
+        boolean exact = true;
+        if(max <0.8){
+            exact = false;
+            //if hashing not good enought, use color matching
+            ColorProcess Cp = new ColorProcess();
+            int[][] current_color = Cp.convert_video(10,150,query_file_path);
+            int[][][] total_result = Cp.read_txt("resources/data/all_colors.txt");
+            double[] color_p = Cp.compare_color(current_color,total_result);
+
+            for (int n = 1; n < possibility.length; n++) possibility[n] = possibility[n]*0.5 + color_p[n]*0.5;
+        }
+
+
         Map<Double, Integer> map = new HashMap<Double, Integer>();
         for(int i=0;i<7;i++){
             map.put(possibility[i],i);
@@ -103,11 +123,12 @@ public class MediaPlayer {
         video_rank[1] = map.get(possibility[5]);
         video_rank[2] = map.get(possibility[4]);
 
+
+        //fill the chart information
         double[][] graph_chart = new double[3][40];
         graph_chart[0] = result[video_rank[0]];
         graph_chart[1] = result[video_rank[1]];
         graph_chart[2] = result[video_rank[2]];
-
 
 
         //configurate window setup
@@ -125,8 +146,20 @@ public class MediaPlayer {
             frame.add(panels[i]);
         }
 
-        JTextArea query_name = new JTextArea("Qurey Video");
+        JLabel query_name = new JLabel(query_music_file_path);
+        query_name.setFont(new Font("Serif", Font.BOLD, 18));
         panels[0].add(query_name);
+        if(!exact) {
+            JLabel no = new JLabel("No exact match");
+            no.setFont(new Font("Serif", Font.BOLD, 18));
+            no.setForeground(Color.RED);
+            panels[0].add(no);
+        }else {
+            JLabel no = new JLabel("Exact match");
+            no.setFont(new Font("Serif", Font.BOLD, 18));
+            no.setForeground(Color.RED);
+            panels[0].add(no);
+        }
 
         //video selection
         DecimalFormat df = new DecimalFormat();
@@ -151,8 +184,9 @@ public class MediaPlayer {
         match1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MediaPlayer.this.v2 = ren.showIms(vedio_path[video_rank[0]], 600, width, height);
-                MediaPlayer.this.m2 = new PlayMusic(music_path[video_rank[0]]);
+                v2 = ren.showIms(vedio_path[video_rank[0]], 600, width, height);
+                if(m2 != null) m2.stop();
+                m2 = new PlayMusic(music_path[video_rank[0]]);
 
                 cc = new ChartPanel(image_bar[0]);
                 cc.setPreferredSize(new Dimension(350,180));
@@ -167,8 +201,9 @@ public class MediaPlayer {
         match2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MediaPlayer.this.v2 = ren.showIms(vedio_path[video_rank[1]], 600, width, height);
-                MediaPlayer.this.m2 = new PlayMusic(music_path[video_rank[1]]);
+                v2 = ren.showIms(vedio_path[video_rank[1]], 600, width, height);
+                if(m2 != null) m2.stop();
+                m2 = new PlayMusic(music_path[video_rank[1]]);
 
                 cc = new ChartPanel(image_bar[1]);
                 cc.setPreferredSize(new Dimension(350,180));
@@ -184,8 +219,9 @@ public class MediaPlayer {
         match3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MediaPlayer.this.v2 = ren.showIms(vedio_path[video_rank[2]], 600, width, height);
-                MediaPlayer.this.m2 = new PlayMusic(music_path[video_rank[2]]);
+                v2 = ren.showIms(vedio_path[video_rank[2]], 600, width, height);
+                if(m2 != null) m2.stop();
+                m2 = new PlayMusic(music_path[video_rank[2]]);
 
                 cc = new ChartPanel(image_bar[2]);
                 cc.setPreferredSize(new Dimension(350,180));
@@ -301,11 +337,8 @@ public class MediaPlayer {
                 if(MediaPlayer.this.v2 != null) vedio_label2.setIcon(new ImageIcon(MediaPlayer.this.v2[0]));
             }
         });
-//        Points points = new Points();
-//        panels[3].add(points);
 
-
-        //        frame.pack();
+        frame.pack();
         frame.setSize(800, 800);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -314,7 +347,6 @@ public class MediaPlayer {
 
 
         while (true) {
-
             if(v1_start){
                 vedio_label1.setIcon(new ImageIcon(v1[v1_frame]));
                 if(v1_frame == 149){
@@ -334,34 +366,11 @@ public class MediaPlayer {
                 }else v2_frame +=1;
 
             }
-
             sleep((long) 33.33);
         }
     }
 
     public static void main(String[] args) {
         MediaPlayer m = new MediaPlayer(args);
-    }
-}
-
-class Points extends JPanel {
-
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        Graphics2D g2d = (Graphics2D) g;
-
-        g2d.setColor(Color.red);
-
-        for (int i = 0; i <= 100000; i++) {
-            Dimension size = getSize();
-            int w = size.width;
-            int h = size.height;
-
-            Random r = new Random();
-            int x = Math.abs(r.nextInt()) % w;
-            int y = Math.abs(r.nextInt()) % h;
-            g2d.drawLine(x, y, x, y);
-        }
     }
 }

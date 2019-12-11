@@ -39,6 +39,7 @@ public class Chart {
         // get Y Axis
         NumberAxis rangeAxis = (NumberAxis) categoryPlot.getRangeAxis();
         rangeAxis.setVisible(false);
+        rangeAxis.setRange(0,1);
         // get X Axis
         CategoryAxis categoryAxis = (CategoryAxis) categoryPlot.getDomainAxis();
         categoryAxis.setVisible(false);

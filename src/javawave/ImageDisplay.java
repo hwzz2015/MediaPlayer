@@ -1,6 +1,8 @@
 package javawave;
 
 
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 
@@ -12,7 +14,7 @@ public class ImageDisplay {
 	/** Read Image RGB
 	 *  Reads the image of given width and height at the given imgPath into the provided BufferedImage.
 	 */
-	private void readImageRGB(int width, int height, String imgPath, BufferedImage img)
+	public static void readImageRGB(int width, int height, String imgPath, BufferedImage img)
 	{
 		try
 		{
@@ -50,7 +52,7 @@ public class ImageDisplay {
 		}
 	}
 
-	public BufferedImage[] showIms(String filename,int length, int width, int height){
+	public static BufferedImage[] showIms(String filename,int length, int width, int height){
 
 		BufferedImage[] imgarray = new BufferedImage[length];
 		String relative_path = filename;
@@ -62,6 +64,28 @@ public class ImageDisplay {
 		}
 
 		return  imgarray;
+	}
+
+	public static void show_single_Ims(BufferedImage img){
+
+		// Use label to display the image
+		JFrame frame = new JFrame();
+		GridBagLayout gLayout = new GridBagLayout();
+		frame.getContentPane().setLayout(gLayout);
+
+		JLabel lbIm1 = new JLabel(new ImageIcon(img));
+
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.anchor = GridBagConstraints.CENTER;
+		c.weightx = 0.5;
+		c.gridx = 0;
+		c.gridy = 1;
+		frame.getContentPane().add(lbIm1, c);
+
+		frame.pack();
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 	}
 
 
